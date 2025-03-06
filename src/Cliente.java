@@ -1,8 +1,7 @@
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.nio.file.*;
 
 public class Cliente {
     public static void main(String[] args) {
@@ -123,91 +122,23 @@ public class Cliente {
                     System.out.println("Escolha uma opção abaixo:");
                     System.out.println("1. Enviar arquivo");
                     System.out.println("2. Baixar arquivo");
-                    System.out.println("3. Sair");
+                    System.out.println("3. Atualizar diretório");
+                    System.out.println("4. Sair");
                     System.out.print("Digite sua opcao: ");
                     clienteOpcao = sc.nextInt();
                     sc.nextLine();
 
                     switch (clienteOpcao) {
                         case 1:
-                            dos.writeInt(clienteOpcao);
-                            System.out.print("Digite o diretório do Arquivo que você deseja enviar:");
-                            String arquivo = sc.nextLine();
-
-                            File file = new File(arquivo);
-                            FileInputStream fis = new FileInputStream(file);
-
-                            dos.writeUTF(file.getName());
-
-                            System.out.println("Enviando arquivo: " + file.getName());
-                            int byteData;
-                            while ((byteData = fis.read()) != -1) {
-                                dos.write(byteData);
-                            }
-
-                            System.out.println("Arquivo enviado com sucesso!");
-
+                            enviarArquivo(dos, clienteOpcao, sc);
                             break;
                         case 2:
-                            dos.writeInt(clienteOpcao);
-                            int tipoArquivoOpcao, numeroArquivo = 1, downloadOpcao;
-                            String tipoArquivo = null;
-                            System.out.println("-----------------------------");
-                            System.out.println("Selecione qual tipo de arquivo deseja baixar: ");
-                            System.out.println("1. Documentos");
-                            System.out.println("2. Imagens");
-                            System.out.println("3. Videos");
-                            System.out.print("Digite sua opcao: ");
-                            tipoArquivoOpcao = sc.nextInt();
-                            sc.nextLine();
-
-                            switch (tipoArquivoOpcao) {
-                                case 1:
-                                    tipoArquivo = "docs";
-                                    break;
-                                case 2:
-                                    tipoArquivo = "images";
-                                    break;
-                                case 3:
-                                    tipoArquivo = "videos";
-                                    break;
-                                default:
-                                    System.out.println("Opção Inválida.");
-                            }
-
-                            File diretorio = new File("./drive/" +  usuarioLogado.getLogin() + "/" + tipoArquivo);
-                            File[] arquivos = diretorio.listFiles();
-                            String nomeArquivo = null;
-
-                            if(arquivos == null || arquivos.length == 0){
-                                System.out.println("O drive está vazio.");
-                            } else {
-                                for (File f : arquivos) {
-                                    if(f.isFile()){
-                                        System.out.println(numeroArquivo + ". " + f.getName());
-                                        numeroArquivo++;
-                                        nomeArquivo = f.getName();
-                                    }
-                                }
-                            }
-                            System.out.println("Selecione o número do arquivo que deseja baixar: ");
-                            downloadOpcao = sc.nextInt() - 1;
-                            sc.nextLine();
-                            String diretorioArquivo = arquivos[downloadOpcao].toString();
-                            System.out.println(nomeArquivo);
-                            dos.writeUTF(diretorioArquivo);
-                            System.out.println(diretorioArquivo);
-
-                            long tamanhoArquivo = dis.readLong();
-                            File arquivoRecebido = new File("C:/Users/dan55/Documents/" + nomeArquivo);
-                            try (FileOutputStream fos = new FileOutputStream(arquivoRecebido)) {
-                                for (long i = 0; i < tamanhoArquivo; i++) {
-                                    fos.write(dis.read());
-                                }
-                            }
-                            System.out.println("Arquivo recebido com sucesso!");
+                            baixarArquivo(dis, dos, clienteOpcao, sc, usuarioLogado);
                             break;
                         case 3:
+                            escolherDiretorioParaDownload(sc, usuarioLogado);
+                            break;
+                        case 4:
                             logado = false;
                             dos.close();
                             sc.close();
@@ -215,12 +146,117 @@ public class Cliente {
                         default:
                             System.out.println("Escolha uma opção válida!");
                     }
-
                 }
             } catch (IOException e) {
                 System.err.println("Erro no cliente: " + e.getMessage());
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void enviarArquivo(DataOutputStream dos, int clienteOpcao, Scanner sc){
+        try{
+            dos.writeInt(clienteOpcao);
+            System.out.print("Digite o diretório do Arquivo que você deseja enviar:");
+            String arquivo = sc.nextLine();
+
+            File file = new File(arquivo);
+            FileInputStream fis = new FileInputStream(file);
+
+            dos.writeUTF(file.getName());
+
+            System.out.println("Enviando arquivo: " + file.getName());
+            int byteData;
+            while ((byteData = fis.read()) != -1) {
+                dos.write(byteData);
+            }
+
+            System.out.println("Arquivo enviado com sucesso!");
+            return;
+        } catch (IOException ex) {
+            System.err.println("Erro no cliente: " + ex.getMessage());
+        }
+    }
+
+    public static void baixarArquivo(DataInputStream dis, DataOutputStream dos, int clienteOpcao, Scanner sc, Usuario usuarioLogado){
+        try{
+            dos.writeInt(clienteOpcao);
+            int tipoArquivoOpcao, numeroArquivo = 1, downloadOpcao;
+            String tipoArquivo = null;
+            System.out.println("-----------------------------");
+            System.out.println("Selecione qual tipo de arquivo deseja baixar: ");
+            System.out.println("1. Documentos");
+            System.out.println("2. Imagens");
+            System.out.println("3. Videos");
+            System.out.println("4. Audios");
+            System.out.print("Digite sua opcao: ");
+            tipoArquivoOpcao = sc.nextInt();
+            sc.nextLine();
+
+            switch (tipoArquivoOpcao) {
+                case 1:
+                    tipoArquivo = "docs";
+                    break;
+                case 2:
+                    tipoArquivo = "images";
+                    break;
+                case 3:
+                    tipoArquivo = "videos";
+                    break;
+                case 4:
+                    tipoArquivo = "audios";
+                    break;
+                default:
+                    System.out.println("Opção Inválida.");
+            }
+
+            File diretorio = new File("./drive/" +  usuarioLogado.getLogin() + "/" + tipoArquivo);
+            File[] arquivos = diretorio.listFiles();
+            String nomeArquivo = null;
+
+            if(arquivos == null || arquivos.length == 0){
+                System.out.println("O drive está vazio.");
+                return;
+            } else {
+                for (File f : arquivos) {
+                    if(f.isFile()){
+                        System.out.println(numeroArquivo + ". " + f.getName());
+                        numeroArquivo++;
+                        nomeArquivo = f.getName();
+                    }
+                }
+            }
+            System.out.println("Selecione o número do arquivo que deseja baixar: ");
+            downloadOpcao = sc.nextInt() - 1;
+            sc.nextLine();
+            String diretorioArquivo = arquivos[downloadOpcao].toString();
+            System.out.println(nomeArquivo);
+            if(Files.exists(Paths.get(usuarioLogado.getUserDiretorio() + nomeArquivo))){
+                System.out.println("Esse arquivo já existe nesse diretório");
+                return;
+            }
+            dos.writeUTF(diretorioArquivo);
+            System.out.println(diretorioArquivo);
+
+            long tamanhoArquivo = dis.readLong();
+            File arquivoRecebido = new File(usuarioLogado.getUserDiretorio() + nomeArquivo);
+            try (FileOutputStream fos = new FileOutputStream(arquivoRecebido)) {
+                for (long i = 0; i < tamanhoArquivo; i++) {
+                    fos.write(dis.read());
+                }
+            }
+            System.out.println("Arquivo recebido com sucesso!");
+        } catch (IOException e){
+            System.err.println("Erro no cliente: " + e.getMessage());
+        }
+    }
+
+    public static void escolherDiretorioParaDownload(Scanner sc, Usuario usuarioLogado){
+        String novoDiretorio = null;
+        System.out.println("Diretório atual:" + usuarioLogado.getUserDiretorio());
+        System.out.println("Escolha um diretório para salvar os arquivos baixados: ");
+        novoDiretorio = sc.nextLine();
+        usuarioLogado.setUserDiretorio(novoDiretorio);
+        System.out.println("Diretório atualizado com sucesso!");
     }
 }
