@@ -174,6 +174,7 @@ public class Cliente {
                         dos.write(byteData);
                     }
                     System.out.println("Arquivo enviado com sucesso!");
+                    fis.close();
                 } else {
                     System.out.println("Esse arquivo não existe, tente novamente!");
                     System.out.print("Escolha um diretório: ");
@@ -238,7 +239,7 @@ public class Cliente {
             downloadOpcao = sc.nextInt() - 1;
             sc.nextLine();
             String diretorioArquivo = arquivos[downloadOpcao].toString();
-            System.out.println(nomeArquivo);
+            System.out.println("Baixando...");
             if(Files.exists(Paths.get(usuarioLogado.getUserDiretorio() + nomeArquivo))){
                 System.out.println("Esse arquivo já existe nesse diretório");
                 System.out.println(usuarioLogado.getUserDiretorio() + nomeArquivo);

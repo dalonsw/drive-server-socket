@@ -62,6 +62,7 @@ public class Servidor {
                 fos.write(byteData);
             }
             System.out.println("Arquivo recebido com sucesso!");
+            fos.close();
         } catch (IOException e){
             System.err.println("Erro no servidor: " + e.getMessage());
         }
@@ -82,6 +83,7 @@ public class Servidor {
                 dos.write(byteData);
             }
             System.out.println("Arquivo enviado com sucesso!");
+            fis.close();
         } catch (IOException e){
             System.err.println("Erro no servidor: " + e.getMessage());
         }
