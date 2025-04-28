@@ -159,20 +159,28 @@ public class Cliente {
             dos.writeInt(clienteOpcao);
             System.out.print("Digite o diretório do Arquivo que você deseja enviar:");
             String arquivo = sc.nextLine();
+            boolean diretorioExistente = true;
+            do{
+                diretorioExistente = validarDiretorio(arquivo);
+                if(diretorioExistente){
+                    File file = new File(arquivo);
+                    FileInputStream fis = new FileInputStream(file);
 
-            File file = new File(arquivo);
-            FileInputStream fis = new FileInputStream(file);
+                    dos.writeUTF(file.getName());
 
-            dos.writeUTF(file.getName());
+                    System.out.println("Enviando arquivo: " + file.getName());
+                    int byteData;
+                    while ((byteData = fis.read()) != -1) {
+                        dos.write(byteData);
+                    }
+                    System.out.println("Arquivo enviado com sucesso!");
+                } else {
+                    System.out.println("Esse arquivo não existe, tente novamente!");
+                    System.out.print("Escolha um diretório: ");
+                    arquivo = sc.nextLine();
+                }
+            }while(!diretorioExistente);
 
-            System.out.println("Enviando arquivo: " + file.getName());
-            int byteData;
-            while ((byteData = fis.read()) != -1) {
-                dos.write(byteData);
-            }
-
-            System.out.println("Arquivo enviado com sucesso!");
-            return;
         } catch (IOException ex) {
             System.err.println("Erro no cliente: " + ex.getMessage());
         }
@@ -233,10 +241,10 @@ public class Cliente {
             System.out.println(nomeArquivo);
             if(Files.exists(Paths.get(usuarioLogado.getUserDiretorio() + nomeArquivo))){
                 System.out.println("Esse arquivo já existe nesse diretório");
+                System.out.println(usuarioLogado.getUserDiretorio() + nomeArquivo);
                 return;
             }
             dos.writeUTF(diretorioArquivo);
-            System.out.println(diretorioArquivo);
 
             long tamanhoArquivo = dis.readLong();
             File arquivoRecebido = new File(usuarioLogado.getUserDiretorio() + nomeArquivo);
@@ -246,6 +254,7 @@ public class Cliente {
                 }
             }
             System.out.println("Arquivo recebido com sucesso!");
+            System.out.println(usuarioLogado.getUserDiretorio() + nomeArquivo);
         } catch (IOException e){
             System.err.println("Erro no cliente: " + e.getMessage());
         }
@@ -256,7 +265,29 @@ public class Cliente {
         System.out.println("Diretório atual:" + usuarioLogado.getUserDiretorio());
         System.out.println("Escolha um diretório para salvar os arquivos baixados: ");
         novoDiretorio = sc.nextLine();
-        usuarioLogado.setUserDiretorio(novoDiretorio);
-        System.out.println("Diretório atualizado com sucesso!");
+        boolean diretorioValido = true;
+
+        do{
+            diretorioValido = validarDiretorio(novoDiretorio);
+            if(diretorioValido){
+                usuarioLogado.setUserDiretorio(novoDiretorio);
+                System.out.println("Diretório atualizado com sucesso!");
+            } else {
+                System.out.println("Esse diretório não é válido...");
+                System.out.println("Digite um diretório válido: ");
+                novoDiretorio = sc.nextLine();
+            }
+        }while(!diretorioValido);
+    }
+    public static boolean validarDiretorio(String diretorio){
+        File diretorioEscolhido = new File(diretorio);
+
+        if(diretorioEscolhido.isDirectory()){
+            return true;
+        } else if (diretorioEscolhido.isFile()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

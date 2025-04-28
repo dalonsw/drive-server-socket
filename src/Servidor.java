@@ -53,7 +53,7 @@ public class Servidor {
                 tipoArquivo = "videos";
             } else if (nomeDoArquivo.endsWith(".mp3")) {
                 tipoArquivo = "audios";
-            } else if (nomeDoArquivo.endsWith(".pdf") || nomeDoArquivo.endsWith(".doc")) {
+            } else if (nomeDoArquivo.endsWith(".pdf") || nomeDoArquivo.endsWith(".doc") || nomeDoArquivo.endsWith(".txt")) {
                 tipoArquivo = "docs";
             }
             FileOutputStream fos = new FileOutputStream("drive/" + usuarioLogado + "/" + tipoArquivo + "/" + nomeDoArquivo);
